@@ -71,9 +71,16 @@
   .vv-content { position: relative; z-index: 5; }
 
   @media (max-width: 1023px) {
-    /* Mobile: video becomes a normal block at the top, autoplaying */
-    .vv-bg { position: relative; inset: auto; aspect-ratio: 16/9; }
-    .vv-veil { display: none; }
+    /* Mobile: video stays fixed behind the whole page and scrubs with
+       scroll, like desktop. Content is full-width here, so the veil is a
+       vertical wash instead of the desktop left-column gradient. */
+    .vv-bg video { object-position: center; }
+    .vv-veil {
+      background: linear-gradient(180deg,
+        rgba(255,255,255,.94) 0%,
+        rgba(255,255,255,.84) 50%,
+        rgba(255,255,255,.68) 100%);
+    }
     :root { --colw: 100%; }
   }
 
@@ -92,15 +99,8 @@
   .vv-nav a { color: var(--ink); text-decoration: none; cursor: pointer; transition: opacity .2s; }
   .vv-nav a:hover { opacity: .55; }
   .vv-nav .sep { opacity: .35; }
-  .vv-cta {
-    display: none; font-size: 17px; color: var(--ink); cursor: pointer;
-    text-decoration: underline; text-underline-offset: 3px; transition: opacity .2s;
-    background: none; border: none;
-  }
-  .vv-cta:hover { opacity: .55; }
   @media (min-width: 768px) {
     .vv-nav { display: flex; }
-    .vv-cta { display: block; }
     .vv-burger { display: none !important; }
   }
   .vv-burger {
@@ -354,14 +354,12 @@
     <a href="#services">Services</a>
     <a href="#contact">Contact</a>
   </nav>
-  <button class="vv-cta" onclick="location.hash='#contact'">Get in touch</button>
   <button class="vv-burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </header>
 
 <div class="vv-mobile-menu" id="mobileMenu">
   <a href="#services">Services</a>
   <a href="#contact">Contact</a>
-  <a href="#contact">Get in touch ↗</a>
 </div>
 
 <!-- ================= PAGE CONTENT (floats over the video) ================= -->
@@ -414,9 +412,7 @@
           <p class="vv-pill-title">What sort of service?</p>
           <p class="vv-pill-sub">Select all that apply</p>
           <div class="vv-pills" id="pills"></div>
-          <div class="vv-status empty" id="pillStatus">Please click to select services above.</div>
-          <p class="vv-pill-sub" style="margin-top:6px">Reply language / ご返信の言語</p>
-          <div class="vv-pills" id="langPills"></div>
+          <div class="vv-status empty" id="pillStatus"></div>
           <div class="vv-form">
             <div class="vv-form-row">
               <input class="vv-input" id="fName" placeholder="Your name">
@@ -514,11 +510,13 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
   const progressBar = document.getElementById("progressBar");
   const N = panels.length;
 
-  if (window.innerWidth < 1024) {
-    /* Mobile: plain autoplay loop at the top */
-    video.autoplay = true; video.loop = true;
-    video.play().catch(() => {});
-    return;
+  const isMobile = window.innerWidth < 1024;
+  if (isMobile) {
+    /* Mobile browsers won't seek video frames until a user gesture
+       primes the pipeline: muted play()+pause() on first touch. */
+    window.addEventListener("touchstart", () => {
+      video.play().then(() => video.pause()).catch(() => {});
+    }, { once: true });
   }
 
   let targetTime = 0, currentTime = 0, seeking = false;
@@ -568,12 +566,14 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
       }
     }
 
-    panels.forEach((el, i) => {
-      const { o, y } = panelStyle(pHero, i);
-      el.style.opacity = o;
-      el.style.transform = "translateY(calc(-50% + " + y.toFixed(1) + "px))";
-      el.classList.toggle("is-active", o > 0.5);
-    });
+    if (!isMobile) {
+      panels.forEach((el, i) => {
+        const { o, y } = panelStyle(pHero, i);
+        el.style.opacity = o;
+        el.style.transform = "translateY(calc(-50% + " + y.toFixed(1) + "px))";
+        el.classList.toggle("is-active", o > 0.5);
+      });
+    }
 
     if (progressBar) progressBar.style.width = (pPage * 100).toFixed(1) + "%";
 
@@ -646,19 +646,8 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
   const status = document.getElementById("pillStatus");
   const selected = new Set();
 
-  let lang = (navigator.language || "").toLowerCase().startsWith("ja") ? "ja" : "en";
-  const langWrap = document.getElementById("langPills");
-  [["en", "English"], ["ja", "日本語"]].forEach(([code, label]) => {
-    const b = document.createElement("button");
-    b.className = "vv-pill" + (code === lang ? " active" : "");
-    b.innerHTML = `<span class="pill-check">✓</span>${label}`;
-    b.addEventListener("click", () => {
-      lang = code;
-      langWrap.querySelectorAll(".vv-pill").forEach((p) => p.classList.remove("active"));
-      b.classList.add("active");
-    });
-    langWrap.appendChild(b);
-  });
+  /* Reply language follows the visitor's browser language (no visible toggle). */
+  const lang = (navigator.language || "").toLowerCase().startsWith("ja") ? "ja" : "en";
 
   PILL_OPTIONS.forEach((opt) => {
     const b = document.createElement("button");
@@ -675,7 +664,7 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
   function renderStatus() {
     if (selected.size === 0) {
       status.className = "vv-status empty";
-      status.textContent = "Please click to select services above.";
+      status.textContent = "";
     } else {
       status.className = "vv-status ready";
       status.innerHTML = `<span>Ready to inquire about: <strong>${[...selected].join(", ")}</strong></span>`;
