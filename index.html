@@ -415,6 +415,8 @@
           <p class="vv-pill-sub">Select all that apply</p>
           <div class="vv-pills" id="pills"></div>
           <div class="vv-status empty" id="pillStatus">Please click to select services above.</div>
+          <p class="vv-pill-sub" style="margin-top:6px">Reply language / ご返信の言語</p>
+          <div class="vv-pills" id="langPills"></div>
           <div class="vv-form">
             <div class="vv-form-row">
               <input class="vv-input" id="fName" placeholder="Your name">
@@ -644,6 +646,20 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
   const status = document.getElementById("pillStatus");
   const selected = new Set();
 
+  let lang = (navigator.language || "").toLowerCase().startsWith("ja") ? "ja" : "en";
+  const langWrap = document.getElementById("langPills");
+  [["en", "English"], ["ja", "日本語"]].forEach(([code, label]) => {
+    const b = document.createElement("button");
+    b.className = "vv-pill" + (code === lang ? " active" : "");
+    b.innerHTML = `<span class="pill-check">✓</span>${label}`;
+    b.addEventListener("click", () => {
+      lang = code;
+      langWrap.querySelectorAll(".vv-pill").forEach((p) => p.classList.remove("active"));
+      b.classList.add("active");
+    });
+    langWrap.appendChild(b);
+  });
+
   PILL_OPTIONS.forEach((opt) => {
     const b = document.createElement("button");
     b.className = "vv-pill";
@@ -671,27 +687,36 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
     const name = document.getElementById("fName").value.trim();
     const email = document.getElementById("fEmail").value.trim();
     const msg = document.getElementById("fMsg").value.trim();
-    if (!name || !email || !msg) { alert("Please fill in your name, email and message."); return; }
+    if (!name || !email || !msg) {
+      alert(lang === "ja"
+        ? "お名前、メールアドレス、お問い合わせ内容をご入力ください。"
+        : "Please fill in your name, email and message.");
+      return;
+    }
     const services = [...selected].join(", ") || "General inquiry";
-    btn.disabled = true; btn.textContent = "Sending…";
+    btn.disabled = true; btn.textContent = lang === "ja" ? "送信中…" : "Sending…";
     try {
       const resp = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, services, message: msg,
+        body: JSON.stringify({ name, email, services, message: msg, lang,
           company: document.getElementById("fCompany").value }),
       });
       if (!resp.ok) throw new Error("send failed: " + resp.status);
       document.getElementById("contactUI").style.display = "none";
       const box = document.getElementById("sentBox");
-      document.getElementById("sentText").textContent =
-        "Thanks, " + name.split(" ")[0] + "! Your inquiry" +
-        (selected.size ? " about " + services : "") +
-        " is in — we'll get back to you at " + email + " within one business day.";
+      box.querySelector("h3").textContent = lang === "ja" ? "送信完了 ✳" : "Message sent ✳";
+      document.getElementById("sentText").textContent = lang === "ja"
+        ? "ありがとうございます、" + name + " 様。お問い合わせを受け付けました。1営業日以内に " + email + " 宛にご返信いたします。"
+        : "Thanks, " + name.split(" ")[0] + "! Your inquiry" +
+          (selected.size ? " about " + services : "") +
+          " is in — we'll get back to you at " + email + " within one business day.";
       box.classList.add("show");
     } catch (err) {
-      btn.disabled = false; btn.textContent = "Send message ↗";
-      alert("Sorry — something went wrong sending your message. Please try again in a moment.");
+      btn.disabled = false; btn.textContent = lang === "ja" ? "送信する ↗" : "Send message ↗";
+      alert(lang === "ja"
+        ? "申し訳ありません。送信中にエラーが発生しました。しばらくしてからもう一度お試しください。"
+        : "Sorry — something went wrong sending your message. Please try again in a moment.");
     }
   });
 })();
