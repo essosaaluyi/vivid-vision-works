@@ -421,13 +421,13 @@
               <input class="vv-input" id="fEmail" type="email" placeholder="Email address">
             </div>
             <textarea class="vv-textarea" id="fMsg" placeholder="Tell us about your project — goals, timeline, references…"></textarea>
+            <input id="fCompany" style="position:absolute;left:-9999px;width:0;height:0;opacity:0" tabindex="-1" autocomplete="off" aria-hidden="true" placeholder="Company">
             <div><button class="vv-btn" id="sendBtn">Send message ↗</button></div>
           </div>
           <div class="vv-zoom-note"><span class="vv-zoom-dot"></span>Remote consultations available worldwide via Zoom — English / 日本語</div>
-          <div class="vv-zoom-note"><span class="vv-zoom-dot"></span>Or email us directly — <a href="mailto:vvividvisionv@gmail.com" style="color:inherit;text-underline-offset:3px;">vvividvisionv@gmail.com</a></div>
         </div>
         <div class="vv-sent" id="sentBox">
-          <h3>Message ready to send ✳</h3>
+          <h3>Message sent ✳</h3>
           <p id="sentText"></p>
         </div>
       </div>
@@ -666,22 +666,33 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
     }
   }
 
-  document.getElementById("sendBtn").addEventListener("click", () => {
+  document.getElementById("sendBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("sendBtn");
     const name = document.getElementById("fName").value.trim();
     const email = document.getElementById("fEmail").value.trim();
     const msg = document.getElementById("fMsg").value.trim();
     if (!name || !email || !msg) { alert("Please fill in your name, email and message."); return; }
-    /* Interim: opens the visitor's email app pre-filled. Swap for Formspree once the account exists. */
     const services = [...selected].join(", ") || "General inquiry";
-    const subject = "Website inquiry — " + services;
-    const body = "Name: " + name + "\nEmail: " + email + "\nServices: " + services + "\n\n" + msg;
-    window.location.href = "mailto:vvividvisionv@gmail.com?subject=" +
-      encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-    document.getElementById("contactUI").style.display = "none";
-    const box = document.getElementById("sentBox");
-    document.getElementById("sentText").textContent =
-      "Thanks, " + name.split(" ")[0] + "! Your email app should now open with the message ready — just hit send and we'll get back to you within one business day. If it didn't open, email us directly at vvividvisionv@gmail.com.";
-    box.classList.add("show");
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      const resp = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, services, message: msg,
+          company: document.getElementById("fCompany").value }),
+      });
+      if (!resp.ok) throw new Error("send failed: " + resp.status);
+      document.getElementById("contactUI").style.display = "none";
+      const box = document.getElementById("sentBox");
+      document.getElementById("sentText").textContent =
+        "Thanks, " + name.split(" ")[0] + "! Your inquiry" +
+        (selected.size ? " about " + services : "") +
+        " is in — we'll get back to you at " + email + " within one business day.";
+      box.classList.add("show");
+    } catch (err) {
+      btn.disabled = false; btn.textContent = "Send message ↗";
+      alert("Sorry — something went wrong sending your message. Please try again in a moment.");
+    }
   });
 })();
 
