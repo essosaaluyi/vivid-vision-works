@@ -77,9 +77,9 @@
     .vv-bg video { object-position: center; }
     .vv-veil {
       background: linear-gradient(180deg,
-        rgba(255,255,255,.94) 0%,
-        rgba(255,255,255,.84) 50%,
-        rgba(255,255,255,.68) 100%);
+        rgba(255,255,255,.88) 0%,
+        rgba(255,255,255,.72) 50%,
+        rgba(255,255,255,.52) 100%);
     }
     :root { --colw: 100%; }
   }
@@ -339,7 +339,7 @@
 <!-- ============ FULL-PAGE VIDEO BACKGROUND ============ -->
 <div class="vv-bg">
   <video id="heroVideo"
-    src="https://res.cloudinary.com/dti4imlci/video/upload/bgclip-web_onnhyd.mp4"
+    src="https://res.cloudinary.com/dti4imlci/video/upload/w_1600,q_auto/bgclip-web_onnhyd.mp4"
     muted playsinline preload="auto"></video>
 </div>
 <div class="vv-veil"></div>
@@ -460,7 +460,7 @@
    Each item: type "video" (src = mp4 URL) or "image" (src = image URL).
    If no src yet, leave "" and the gradient placeholder is shown.
    ============================================================= */
-const HERO_VIDEO = "https://res.cloudinary.com/dti4imlci/video/upload/bgclip-web_onnhyd.mp4";
+const HERO_VIDEO = "https://res.cloudinary.com/dti4imlci/video/upload/w_1600,q_auto/bgclip-web_onnhyd.mp4";
 
 const WORKS = [
   { title: "3D / CGI Animation", jp: "3DCG制作", category: "3D Animation", type: "video",
@@ -519,8 +519,24 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
     }, { once: true });
   }
 
-  let targetTime = 0, currentTime = 0, seeking = false;
+  let targetTime = 0, currentTime = 0, seeking = false, seekStartedAt = 0;
   video.addEventListener("seeked", () => (seeking = false));
+
+  /* Use a device-sized transcode and buffer it fully into memory, so
+     scrub seeks decode locally and never stall on the network. */
+  const VIDEO_SRC = isMobile
+    ? "https://res.cloudinary.com/dti4imlci/video/upload/w_960,q_auto/bgclip-web_onnhyd.mp4"
+    : "https://res.cloudinary.com/dti4imlci/video/upload/w_1600,q_auto/bgclip-web_onnhyd.mp4";
+  if (video.getAttribute("src") !== VIDEO_SRC) video.src = VIDEO_SRC;
+  fetch(VIDEO_SRC)
+    .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(r.status))))
+    .then((b) => {
+      const t = video.currentTime;
+      video.src = URL.createObjectURL(b);
+      video.currentTime = t;
+      seeking = false;
+    })
+    .catch(() => {}); /* streaming src keeps working if the fetch fails */
 
   /* progress across the WHOLE page: 0 at top, 1 at the very bottom */
   function pageProgress() {
@@ -562,7 +578,11 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
       currentTime += (targetTime - currentTime) * 0.18;
       if (!seeking && Math.abs(video.currentTime - currentTime) > 0.01) {
         seeking = true;
+        seekStartedAt = performance.now();
         video.currentTime = currentTime;
+      } else if (seeking && performance.now() - seekStartedAt > 400) {
+        /* Watchdog: a dropped 'seeked' event must not freeze the scrub. */
+        seeking = false;
       }
     }
 
