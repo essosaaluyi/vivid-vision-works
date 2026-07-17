@@ -6,6 +6,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Vivid Vision Works — Video · 3D CGI · Motion Design</title>
 <meta name="description" content="Video editing, 3D CGI and motion design studio based in Japan. From concept to LED wall — working in Japanese and English." />
+<link rel="canonical" href="https://vivid-vision-works.vercel.app/" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Vivid Vision Works" />
+<meta property="og:title" content="Vivid Vision Works — Video · 3D CGI · Motion Design" />
+<meta property="og:description" content="Video editing, 3D CGI and motion design studio based in Japan. From concept to LED wall — working in Japanese and English." />
+<meta property="og:url" content="https://vivid-vision-works.vercel.app/" />
+<meta property="og:image" content="https://res.cloudinary.com/dti4imlci/video/upload/so_2,w_1200,h_630,c_fill/bgclip-web_onnhyd.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300e5ff'/%3E%3Cstop offset='.55' stop-color='%237c3aed'/%3E%3Cstop offset='1' stop-color='%23ff2d95'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -413,6 +424,7 @@
             <div><button class="vv-btn" id="sendBtn">Send message ↗</button></div>
           </div>
           <div class="vv-zoom-note"><span class="vv-zoom-dot"></span>Remote consultations available worldwide via Zoom — English / 日本語</div>
+          <div class="vv-zoom-note"><span class="vv-zoom-dot"></span>Or email us directly — <a href="mailto:vvividvisionv@gmail.com" style="color:inherit;text-underline-offset:3px;">vvividvisionv@gmail.com</a></div>
         </div>
         <div class="vv-sent" id="sentBox">
           <h3>Message ready to send ✳</h3>
@@ -659,11 +671,16 @@ const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Event Visuals", "Other"];
     const email = document.getElementById("fEmail").value.trim();
     const msg = document.getElementById("fMsg").value.trim();
     if (!name || !email || !msg) { alert("Please fill in your name, email and message."); return; }
-    /* TODO on deploy: send to a form service (Formspree / Netlify Forms). */
+    /* Interim: opens the visitor's email app pre-filled. Swap for Formspree once the account exists. */
+    const services = [...selected].join(", ") || "General inquiry";
+    const subject = "Website inquiry — " + services;
+    const body = "Name: " + name + "\nEmail: " + email + "\nServices: " + services + "\n\n" + msg;
+    window.location.href = "mailto:vvividvisionv@gmail.com?subject=" +
+      encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
     document.getElementById("contactUI").style.display = "none";
     const box = document.getElementById("sentBox");
     document.getElementById("sentText").textContent =
-      "Thanks, " + name.split(" ")[0] + "! We'll get back to you shortly — usually within one business day. If it's easier, we're happy to jump on a Zoom call.";
+      "Thanks, " + name.split(" ")[0] + "! Your email app should now open with the message ready — just hit send and we'll get back to you within one business day. If it didn't open, email us directly at vvividvisionv@gmail.com.";
     box.classList.add("show");
   });
 })();
