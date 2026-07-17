@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vivid Vision Works — Video · 3D CGI · Motion Design</title>
+<meta name="description" content="Video editing, 3D CGI and motion design studio based in Japan. From concept to LED wall — working in Japanese and English." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #101418;
+    --muted: #5f6b7a;
+    --line: #eceff2;
+    --paper: #ffffff;
+    --vivid: linear-gradient(90deg, #00e5ff, #7c3aed 55%, #ff2d95);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', 'Noto Sans JP', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: #e9e5ff; color: #2a1a5e; }
+  button { font-family: inherit; }
+
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  .vv-cursor {
+    display: inline-block; width: 2px; height: 1.05em;
+    background: var(--ink); vertical-align: middle; margin-left: 3px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+  /* ---------------- hero ---------------- */
+  .vv-hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; }
+  .vv-hero-video-wrap {
+    position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    background: #f6f7f8;
+  }
+  .vv-hero-video { width: 100%; height: 100%; object-fit: cover; object-position: right bottom; }
+  .vv-hero-video-wrap::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.55) 45%, rgba(255,255,255,0) 75%);
+  }
+  @media (max-width: 1023px) {
+    .vv-hero { min-height: 0; }
+    .vv-hero-video-wrap { position: relative; order: 2; aspect-ratio: 16/10; inset: auto; }
+    .vv-hero-video-wrap::after { background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,0) 40%); }
+  }
+
+  /* ---------------- nav ---------------- */
+  .vv-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 28px;
+    background: rgba(255,255,255,.72); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(236,239,242,.7);
+  }
+  .vv-logo { display: flex; align-items: center; gap: 9px; cursor: pointer; user-select: none; text-decoration: none; color: var(--ink); }
+  .vv-logo-text { font-size: 20px; font-weight: 500; letter-spacing: -0.02em; }
+  .vv-logo-mark { width: 14px; height: 14px; border-radius: 50%; background: var(--vivid); flex: none; }
+  .vv-nav { display: none; gap: 4px; font-size: 17px; }
+  .vv-nav a { color: var(--ink); text-decoration: none; cursor: pointer; transition: opacity .2s; }
+  .vv-nav a:hover { opacity: .55; }
+  .vv-nav .sep { opacity: .35; }
+  .vv-cta {
+    display: none; font-size: 17px; color: var(--ink); cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px; transition: opacity .2s;
+    background: none; border: none;
+  }
+  .vv-cta:hover { opacity: .55; }
+  @media (min-width: 768px) {
+    .vv-nav { display: flex; }
+    .vv-cta { display: block; }
+    .vv-burger { display: none !important; }
+  }
+  .vv-burger {
+    display: flex; flex-direction: column; gap: 5px; background: none; border: none;
+    cursor: pointer; padding: 6px; z-index: 50;
+  }
+  .vv-burger span { width: 24px; height: 2px; background: var(--ink); transition: all .3s; }
+  .vv-burger.open span:nth-child(1) { transform: rotate(45deg) translateY(5px) translateX(5px); }
+  .vv-burger.open span:nth-child(2) { opacity: 0; }
+  .vv-burger.open span:nth-child(3) { transform: rotate(-45deg) translateY(-5px) translateX(5px); }
+  .vv-mobile-menu {
+    position: fixed; inset: 0; z-index: 39; background: rgba(255,255,255,.96);
+    backdrop-filter: blur(8px); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 34px;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .vv-mobile-menu.open { opacity: 1; pointer-events: auto; }
+  .vv-mobile-menu a { font-size: 32px; color: var(--ink); text-decoration: none; cursor: pointer; }
+
+  /* ---------------- hero content ---------------- */
+  .vv-hero-content {
+    position: relative; z-index: 10; flex: 1;
+    max-width: 1200px; width: 100%; margin: 0 auto;
+    padding: 140px 28px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .vv-h1 {
+    font-size: clamp(42px, 7vw, 78px);
+    font-weight: 500; letter-spacing: -0.03em; line-height: 1.08;
+    white-space: pre-wrap; margin-bottom: 28px;
+    animation: dropIn .6s ease both;
+    min-height: 2.2em;
+  }
+  .vv-sub {
+    font-size: clamp(16px, 2vw, 20px); color: var(--muted); line-height: 1.65;
+    max-width: 560px; margin-bottom: 40px;
+    animation: dropIn .6s ease .15s both;
+  }
+  .vv-sub .jp { font-family: 'Noto Sans JP', sans-serif; font-size: .85em; opacity: .8; }
+  .vv-hero-actions { display: flex; gap: 14px; flex-wrap: wrap; animation: dropIn .6s ease .3s both; }
+  .vv-btn {
+    font-size: 16px; font-weight: 500; cursor: pointer;
+    padding: 13px 26px; border-radius: 999px; border: 1px solid var(--ink);
+    background: var(--ink); color: #fff; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform .2s, box-shadow .2s; text-decoration: none;
+  }
+  .vv-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,20,24,.18); }
+  .vv-btn.ghost { background: transparent; color: var(--ink); }
+  .vv-scrub-hint {
+    margin-top: 56px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); display: none; align-items: center; gap: 10px;
+    animation: dropIn .6s ease .5s both;
+  }
+  .vv-scrub-hint::before { content: ''; width: 34px; height: 1px; background: var(--muted); display: block; }
+  @media (min-width: 1024px) { .vv-scrub-hint { display: flex; } }
+
+  /* ---------------- sections ---------------- */
+  .vv-section {
+    max-width: 1200px; margin: 0 auto; padding: 110px 28px 30px;
+    opacity: 0; transform: translateY(26px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .vv-section.is-visible { opacity: 1; transform: none; }
+  .vv-eyebrow { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .vv-eyebrow-jp {
+    font-family: 'Noto Sans JP', sans-serif; font-size: 13px; letter-spacing: .2em;
+    background: var(--vivid); -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 500;
+  }
+  .vv-eyebrow-en { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .vv-h2 { font-size: clamp(30px, 4vw, 44px); font-weight: 500; letter-spacing: -0.025em; margin-bottom: 42px; }
+
+  /* works grid */
+  .vv-grid { display: grid; grid-template-columns: 1fr; gap: 22px; }
+  @media (min-width: 640px) { .vv-grid { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .vv-grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .vv-card { cursor: pointer; background: none; border: none; text-align: left; padding: 0; }
+  .vv-thumb {
+    aspect-ratio: 4/3; border-radius: 18px; overflow: hidden; position: relative;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), box-shadow .35s;
+  }
+  .vv-card:hover .vv-thumb { transform: translateY(-5px) scale(1.015); box-shadow: 0 18px 44px rgba(16,20,24,.16); }
+  .vv-thumb-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .vv-thumb-cat {
+    position: absolute; top: 14px; left: 14px; font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: #fff; background: rgba(10,12,16,.45);
+    padding: 5px 11px; border-radius: 999px; backdrop-filter: blur(4px);
+  }
+  .vv-thumb-play {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: #fff; opacity: 0; transition: opacity .3s;
+  }
+  .vv-card:hover .vv-thumb-play { opacity: 1; }
+  .vv-thumb-play .ring {
+    width: 58px; height: 58px; border-radius: 50%; background: rgba(255,255,255,.16);
+    backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.5);
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+  }
+  .vv-card-meta { padding: 14px 4px 0; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .vv-card-title { font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+  .vv-card-jp { font-family: 'Noto Sans JP', sans-serif; font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+  /* modal */
+  .vv-modal-backdrop {
+    position: fixed; inset: 0; z-index: 60; background: rgba(12,14,18,.66);
+    backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .vv-modal-backdrop.open { display: flex; animation: fadeIn .25s ease both; }
+  .vv-modal {
+    background: #fff; border-radius: 22px; max-width: 880px; width: 100%;
+    max-height: 88vh; overflow-y: auto; animation: dropIn .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .vv-modal-media { width: 100%; aspect-ratio: 16/9; background: #0b0f14; position: relative; }
+  .vv-modal-media video, .vv-modal-media .ph, .vv-modal-media img {
+    width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;
+  }
+  .vv-modal-body { padding: 26px 28px 32px; }
+  .vv-modal-title-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; margin-bottom: 10px; flex-wrap: wrap; }
+  .vv-modal-title { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
+  .vv-modal-cat {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    background: var(--vivid); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 600;
+  }
+  .vv-modal-desc { color: var(--muted); line-height: 1.7; font-size: 15.5px; }
+  .vv-modal-close {
+    position: absolute; top: 14px; right: 14px; z-index: 2;
+    width: 38px; height: 38px; border-radius: 50%; border: none; cursor: pointer;
+    background: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center;
+    transition: transform .2s; font-size: 16px; line-height: 1;
+  }
+  .vv-modal-close:hover { transform: rotate(90deg); }
+
+  /* services */
+  .vv-services { border-top: 1px solid var(--line); }
+  .vv-service-row {
+    display: grid; grid-template-columns: 1fr; gap: 8px;
+    padding: 26px 4px; border-bottom: 1px solid var(--line);
+    transition: background .25s; border-radius: 12px;
+  }
+  @media (min-width: 768px) {
+    .vv-service-row { grid-template-columns: 260px 130px 1fr; gap: 24px; align-items: baseline; }
+  }
+  .vv-service-row:hover { background: #fafbfc; }
+  .vv-service-en { font-size: 21px; font-weight: 500; letter-spacing: -0.015em; }
+  .vv-service-jp { font-family: 'Noto Sans JP', sans-serif; font-size: 13px; color: var(--muted); }
+  .vv-service-desc { color: var(--muted); font-size: 15px; line-height: 1.65; }
+
+  /* contact */
+  .vv-contact { padding-bottom: 90px; }
+  .vv-pill-title { font-size: 22px; font-weight: 500; letter-spacing: -0.015em; margin-bottom: 4px; }
+  .vv-pill-sub { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+  .vv-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
+  .vv-pill {
+    font-size: 15px; cursor: pointer;
+    padding: 11px 20px; border-radius: 999px;
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all .22s cubic-bezier(.2,.8,.2,1);
+  }
+  .vv-pill:hover { background: #f4f6f8; }
+  .vv-pill.active {
+    background: var(--ink); color: #fff; border-color: var(--ink);
+    box-shadow: 0 6px 18px rgba(16,20,24,.16);
+  }
+  .vv-pill .pill-check { display: none; animation: popIn .3s cubic-bezier(.3,1.6,.4,1) both; }
+  .vv-pill.active .pill-check { display: inline; }
+  .vv-status { font-size: 13px; border-radius: 16px; margin-bottom: 34px; transition: all .3s; }
+  .vv-status.empty { color: var(--muted); opacity: .6; font-style: italic; padding: 4px 2px; }
+  .vv-status.ready {
+    background: #fafbf9; border: 1px solid var(--line); padding: 14px 18px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    animation: dropIn .35s ease both;
+  }
+  .vv-form { display: grid; gap: 14px; max-width: 640px; }
+  .vv-input, .vv-textarea {
+    font-family: inherit; font-size: 15.5px; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px;
+    background: #fff; outline: none; transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+  }
+  .vv-input:focus, .vv-textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+  .vv-textarea { min-height: 130px; resize: vertical; }
+  .vv-form-row { display: grid; gap: 14px; }
+  @media (min-width: 640px) { .vv-form-row { grid-template-columns: 1fr 1fr; } }
+  .vv-sent {
+    display: none;
+    padding: 34px; border: 1px solid var(--line); border-radius: 20px; background: #fafbf9;
+    animation: dropIn .4s ease both; max-width: 640px;
+  }
+  .vv-sent.show { display: block; }
+  .vv-sent h3 { font-size: 22px; font-weight: 500; margin-bottom: 8px; }
+  .vv-sent p { color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .vv-zoom-note { margin-top: 26px; font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .vv-zoom-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--vivid); flex: none; }
+
+  /* footer */
+  .vv-footer {
+    border-top: 1px solid var(--line); padding: 30px 28px;
+    max-width: 1200px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= NAV ================= -->
+<header class="vv-header">
+  <a class="vv-logo" href="#top">
+    <span class="vv-logo-mark"></span>
+    <span class="vv-logo-text">Vivid Vision Works&reg;</span>
+  </a>
+  <nav class="vv-nav">
+    <span><a href="#works">Works</a><span class="sep">,&nbsp;</span></span>
+    <span><a href="#services">Services</a><span class="sep">,&nbsp;</span></span>
+    <span><a href="#contact">Contact</a></span>
+  </nav>
+  <button class="vv-cta" onclick="location.hash='#contact'">Get in touch</button>
+  <button class="vv-burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+</header>
+
+<div class="vv-mobile-menu" id="mobileMenu">
+  <a href="#works">Works</a>
+  <a href="#services">Services</a>
+  <a href="#contact">Contact</a>
+  <a href="#contact">Get in touch ↗</a>
+</div>
+
+<!-- ================= HERO ================= -->
+<div class="vv-hero" id="top">
+  <div class="vv-hero-video-wrap">
+    <video id="heroVideo" class="vv-hero-video"
+      src="https://res.cloudinary.com/dti4imlci/video/upload/bgclip-web_onnhyd.mp4"
+      muted playsinline preload="auto"></video>
+  </div>
+  <div class="vv-hero-content">
+    <h1 class="vv-h1"><span id="typewriter"></span><span class="vv-cursor" id="cursor"></span></h1>
+    <p class="vv-sub">
+      Video editing, 3D CGI and motion design — from concept to LED wall.<br>
+      Based in Japan, working in <span class="jp">日本語</span> / English.
+    </p>
+    <div class="vv-hero-actions">
+      <a class="vv-btn" href="#works">See the work ↗</a>
+      <a class="vv-btn ghost" href="#contact">Start a project</a>
+    </div>
+    <div class="vv-scrub-hint">Move your mouse to scrub the reel</div>
+  </div>
+</div>
+
+<!-- ================= WORKS ================= -->
+<section class="vv-section" id="works">
+  <div class="vv-eyebrow"><span class="vv-eyebrow-jp">制作実績</span><span class="vv-eyebrow-en">Selected Works</span></div>
+  <h2 class="vv-h2">Things we've made.</h2>
+  <div class="vv-grid" id="worksGrid"></div>
+</section>
+
+<!-- ================= SERVICES ================= -->
+<section class="vv-section" id="services">
+  <div class="vv-eyebrow"><span class="vv-eyebrow-jp">サービス</span><span class="vv-eyebrow-en">Services</span></div>
+  <h2 class="vv-h2">What we offer.</h2>
+  <div class="vv-services" id="servicesList"></div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section class="vv-section" id="contact">
+  <div class="vv-eyebrow"><span class="vv-eyebrow-jp">お問い合わせ</span><span class="vv-eyebrow-en">Contact</span></div>
+  <h2 class="vv-h2">We'd love to hear from you.</h2>
+  <div class="vv-contact">
+    <div id="contactUI">
+      <p class="vv-pill-title">What sort of service?</p>
+      <p class="vv-pill-sub">Select all that apply</p>
+      <div class="vv-pills" id="pills"></div>
+      <div class="vv-status empty" id="pillStatus">Please click to select services above.</div>
+      <div class="vv-form">
+        <div class="vv-form-row">
+          <input class="vv-input" id="fName" placeholder="Your name">
+          <input class="vv-input" id="fEmail" type="email" placeholder="Email address">
+        </div>
+        <textarea class="vv-textarea" id="fMsg" placeholder="Tell us about your project — goals, timeline, references…"></textarea>
+        <div><button class="vv-btn" id="sendBtn">Send message ↗</button></div>
+      </div>
+      <div class="vv-zoom-note"><span class="vv-zoom-dot"></span>Remote consultations available worldwide via Zoom — English / 日本語</div>
+    </div>
+    <div class="vv-sent" id="sentBox">
+      <h3>Message ready to send ✳</h3>
+      <p id="sentText"></p>
+    </div>
+  </div>
+</section>
+
+<footer class="vv-footer">
+  <span>© <span id="year"></span> Vivid Vision Works — Japan</span>
+  <span>Video · 3D CGI · Motion · Event Visuals · AI-Enhanced</span>
+</footer>
+
+<!-- ================= MODAL ================= -->
+<div class="vv-modal-backdrop" id="modal">
+  <div class="vv-modal" id="modalInner">
+    <div class="vv-modal-media" id="modalMedia">
+      <button class="vv-modal-close" id="modalClose" aria-label="Close">✕</button>
+    </div>
+    <div class="vv-modal-body">
+      <div class="vv-modal-title-row">
+        <span class="vv-modal-title" id="modalTitle"></span>
+        <span class="vv-modal-cat" id="modalCat"></span>
+      </div>
+      <p class="vv-modal-desc" id="modalDesc"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =============================================================
+   EDIT YOUR PORTFOLIO HERE.
+   Each item: type "video" (src = mp4 URL) or "image" (src = image URL).
+   If no src yet, leave "" and the gradient placeholder is shown.
+   ============================================================= */
+const HERO_VIDEO = "https://res.cloudinary.com/dti4imlci/video/upload/bgclip-web_onnhyd.mp4";
+
+const WORKS = [
+  { title: "Product Launch CGI", jp: "3Dプロダクトアニメーション", category: "3D Animation", type: "video",
+    src: HERO_VIDEO, thumb: "",
+    gradient: "linear-gradient(135deg,#00e5ff 25%,#7c3aed 70%,#0b0f14)",
+    desc: "Full-CGI product reveal — modeling, materials, lighting, camera and final render in Blender." },
+  { title: "LED Wall — Expo Stage", jp: "LEDウォール映像", category: "Event Visuals", type: "image",
+    src: "", thumb: "",
+    gradient: "linear-gradient(120deg,#ff2d95,#7c3aed 45%,#00e5ff)",
+    desc: "Large-format LED display content for an exhibition stage in Japan, designed for pixel-accurate playback on site." },
+  { title: "Brand Promo Edit", jp: "プロモーション映像編集", category: "Video Editing", type: "image",
+    src: "", thumb: "",
+    gradient: "linear-gradient(160deg,#101418,#243040 55%,#00e5ff)",
+    desc: "Short-form promotional edit — pacing, cuts, subtitles and on-screen text in Premiere Pro." },
+  { title: "Motion Graphics Loop", jp: "モーショングラフィックス", category: "Motion Design", type: "image",
+    src: "", thumb: "",
+    gradient: "linear-gradient(135deg,#7c3aed,#ff2d95 60%,#ffb15e)",
+    desc: "Seamless animated background loop built in After Effects for conference stage screens." },
+  { title: "Machinery Visualization", jp: "CGIビジュアライゼーション", category: "CGI / Product Viz", type: "image",
+    src: "", thumb: "",
+    gradient: "linear-gradient(150deg,#0b0f14,#334155 50%,#7c3aed)",
+    desc: "CGI visualization of industrial machinery — communicating what's hard to film with photoreal rendering." },
+  { title: "AI-Enhanced Concept Film", jp: "AI活用ビジュアル制作", category: "AI-Enhanced", type: "image",
+    src: "", thumb: "",
+    gradient: "linear-gradient(130deg,#00e5ff,#16f0a3 45%,#101418)",
+    desc: "Concept visuals exploring AI-assisted asset generation, finished with manual control in Blender and Adobe tools." },
+];
+
+const SERVICES = [
+  { en: "Video Editing", jp: "映像編集", desc: "Short & long-form, promos, corporate and social content. Cuts, pacing, subtitles, on-screen text — Premiere Pro & After Effects." },
+  { en: "3D / CGI", jp: "3DCG制作", desc: "Product animation, modeling, look-dev, lighting and photoreal rendering in Blender. Show what a camera can't." },
+  { en: "Motion Graphics", jp: "モーショングラフィックス", desc: "Animated titles, backgrounds and seamless loops for brands, screens and stages." },
+  { en: "Event & LED Visuals", jp: "イベント映像", desc: "Content for LED walls, projection and conference stages — built on real on-site AV experience at expos across Japan." },
+  { en: "AI-Enhanced Production", jp: "AI活用制作", desc: "Modern AI tools for concepting and asset generation, always finished with manual creative control." },
+];
+
+const PILL_OPTIONS = ["Video Editing", "3D / CGI", "Motion Graphics", "Event Visuals", "Other"];
+
+/* ---------------- typewriter ---------------- */
+(function () {
+  const text = "we turn ideas into\nvivid visuals.";
+  const el = document.getElementById("typewriter");
+  const cursor = document.getElementById("cursor");
+  let i = 0;
+  setTimeout(function tick() {
+    i++;
+    el.textContent = text.slice(0, i);
+    if (i < text.length) setTimeout(tick, 38);
+    else setTimeout(() => (cursor.style.display = "none"), 1200);
+  }, 600);
+})();
+
+/* ---------------- hero video scrub ---------------- */
+(function () {
+  const video = document.getElementById("heroVideo");
+  let target = 0, seeking = false, prevX = null;
+  video.addEventListener("seeked", () => (seeking = false));
+  window.addEventListener("mousemove", (e) => {
+    if (window.innerWidth < 1024) return;
+    if (!video.duration || isNaN(video.duration)) return;
+    if (prevX === null) { prevX = e.clientX; target = video.currentTime || 0; return; }
+    const delta = e.clientX - prevX;
+    prevX = e.clientX;
+    target += (delta / window.innerWidth) * 0.8 * video.duration;
+    target = Math.max(0, Math.min(video.duration - 0.05, target));
+    if (!seeking) { seeking = true; video.currentTime = target; }
+  });
+  if (window.innerWidth < 1024) {
+    video.autoplay = true; video.loop = true;
+    video.play().catch(() => {});
+  }
+})();
+
+/* ---------------- works grid + modal ---------------- */
+(function () {
+  const grid = document.getElementById("worksGrid");
+  WORKS.forEach((w, idx) => {
+    const btn = document.createElement("button");
+    btn.className = "vv-card";
+    const bg = w.thumb ? `background-image:url('${w.thumb}')` : `background:${w.gradient}`;
+    btn.innerHTML = `
+      <div class="vv-thumb">
+        <div class="vv-thumb-bg" style="${bg}"></div>
+        <span class="vv-thumb-cat">${w.category}</span>
+        <div class="vv-thumb-play"><span class="ring">${w.type === "video" ? "▶" : "↗"}</span></div>
+      </div>
+      <div class="vv-card-meta">
+        <span class="vv-card-title">${w.title}</span>
+        <span class="vv-card-jp">${w.jp}</span>
+      </div>`;
+    btn.addEventListener("click", () => openModal(idx));
+    grid.appendChild(btn);
+  });
+
+  const modal = document.getElementById("modal");
+  const media = document.getElementById("modalMedia");
+  const closeBtn = document.getElementById("modalClose");
+
+  function openModal(idx) {
+    const w = WORKS[idx];
+    media.querySelectorAll("video, img, .ph").forEach((n) => n.remove());
+    if (w.type === "video" && w.src) {
+      const v = document.createElement("video");
+      v.src = w.src; v.autoplay = true; v.muted = true; v.loop = true;
+      v.controls = true; v.playsInline = true;
+      media.appendChild(v);
+    } else if (w.type === "image" && w.src) {
+      const img = document.createElement("img");
+      img.src = w.src; img.alt = w.title;
+      media.appendChild(img);
+    } else {
+      const ph = document.createElement("div");
+      ph.className = "ph"; ph.style.background = w.gradient;
+      media.appendChild(ph);
+    }
+    document.getElementById("modalTitle").textContent = w.title;
+    document.getElementById("modalCat").textContent = w.category + " · " + w.jp;
+    document.getElementById("modalDesc").textContent = w.desc;
+    modal.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+  function closeModal() {
+    modal.classList.remove("open");
+    media.querySelectorAll("video").forEach((v) => v.pause());
+    document.body.style.overflow = "";
+  }
+  closeBtn.addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+})();
+
+/* ---------------- services ---------------- */
+(function () {
+  const list = document.getElementById("servicesList");
+  SERVICES.forEach((s) => {
+    const row = document.createElement("div");
+    row.className = "vv-service-row";
+    row.innerHTML = `<span class="vv-service-en">${s.en}</span>
+      <span class="vv-service-jp">${s.jp}</span>
+      <span class="vv-service-desc">${s.desc}</span>`;
+    list.appendChild(row);
+  });
+})();
+
+/* ---------------- contact pills + form ---------------- */
+(function () {
+  const pillsWrap = document.getElementById("pills");
+  const status = document.getElementById("pillStatus");
+  const selected = new Set();
+
+  PILL_OPTIONS.forEach((opt) => {
+    const b = document.createElement("button");
+    b.className = "vv-pill";
+    b.innerHTML = `<span class="pill-check">✓</span>${opt}`;
+    b.addEventListener("click", () => {
+      if (selected.has(opt)) { selected.delete(opt); b.classList.remove("active"); }
+      else { selected.add(opt); b.classList.add("active"); }
+      renderStatus();
+    });
+    pillsWrap.appendChild(b);
+  });
+
+  function renderStatus() {
+    if (selected.size === 0) {
+      status.className = "vv-status empty";
+      status.textContent = "Please click to select services above.";
+    } else {
+      status.className = "vv-status ready";
+      status.innerHTML = `<span>Ready to inquire about: <strong>${[...selected].join(", ")}</strong></span>`;
+    }
+  }
+
+  document.getElementById("sendBtn").addEventListener("click", () => {
+    const name = document.getElementById("fName").value.trim();
+    const email = document.getElementById("fEmail").value.trim();
+    const msg = document.getElementById("fMsg").value.trim();
+    if (!name || !email || !msg) { alert("Please fill in your name, email and message."); return; }
+    /* TODO on deploy: send to a form service (Formspree / Netlify Forms). */
+    document.getElementById("contactUI").style.display = "none";
+    const box = document.getElementById("sentBox");
+    document.getElementById("sentText").textContent =
+      "Thanks, " + name.split(" ")[0] + "! We'll get back to you shortly — usually within one business day. If it's easier, we're happy to jump on a Zoom call.";
+    box.classList.add("show");
+  });
+})();
+
+/* ---------------- scroll reveal + misc ---------------- */
+(function () {
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) { en.target.classList.add("is-visible"); obs.unobserve(en.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".vv-section").forEach((s) => obs.observe(s));
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  const burger = document.getElementById("burger");
+  const menu = document.getElementById("mobileMenu");
+  burger.addEventListener("click", () => {
+    burger.classList.toggle("open");
+    menu.classList.toggle("open");
+  });
+  menu.querySelectorAll("a").forEach((a) =>
+    a.addEventListener("click", () => { burger.classList.remove("open"); menu.classList.remove("open"); })
+  );
+})();
+</script>
+</body>
+</html>
